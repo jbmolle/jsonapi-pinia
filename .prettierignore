@@ -1,0 +1,4 @@
+dist/
+LICENSE
+.prettierignore
+pnpm-lock.yaml

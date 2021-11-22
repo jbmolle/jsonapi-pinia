@@ -1,0 +1,54 @@
+{
+  "name": "jsonapi-pinia",
+  "version": "0.0.1",
+  "description": "JSONAPI data from a Pinia store.",
+  "keywords": [
+    "vue",
+    "pinia",
+    "jsonapi"
+  ],
+  "files": [
+    "src/"
+  ],
+  "author": "Jean-Baptiste Molle <jb.molle@vescape.com>",
+  "homepage": "https://github.com/jbmolle/jsonapi-pinia.git",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jbmolle/jsonapi-pinia.git"
+  },
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.cjs"
+  },
+  "scripts": {
+    "build": "rimraf dist && npm run lint && npm run prepack",
+    "prepack": "unbuild",
+    "format": "prettier --write .",
+    "lint": "eslint --ext .ts src/**",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.3.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-vue": "^8.1.1",
+    "eslint-plugin-prettier-vue": "^3.1.0",
+    "jest": "^27.3.1",
+    "node-fetch": "3.1.0",
+    "npm-run-all": "^4.1.5",
+    "pinia": "^2.0.4",
+    "prettier": "2.4.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.59.0",
+    "ts-jest": "^27.0.7",
+    "typescript": "^4.5.2",
+    "unbuild": "latest",
+    "vue": "^3.0.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.11",
+    "pinia": "^2.0.4"
+  }
+}
