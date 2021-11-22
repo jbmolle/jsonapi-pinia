@@ -1,0 +1,12 @@
+node_modules/
+pnpm-lock.yaml
+src/
+tests/
+jest.config.js
+build.config.ts
+.eslintrc.js
+.git/
+.gitignore
+.prettierignore
+.prettierrc.json
+.npmignore

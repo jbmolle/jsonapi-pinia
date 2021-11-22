@@ -1,6 +1,6 @@
 {
   "name": "pinia-jsonapi",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JSONAPI data from a Pinia store.",
   "keywords": [
     "vue",
@@ -8,7 +8,7 @@
     "jsonapi"
   ],
   "files": [
-    "src/"
+    "dist/"
   ],
   "author": "Jean-Baptiste Molle <jb.molle@vescape.com>",
   "homepage": "https://github.com/jbmolle/jsonapi-pinia.git",
