@@ -1,5 +1,5 @@
 {
-  "name": "pinia-jsonapi",
+  "name": "jsonapi-pinia",
   "version": "0.0.4",
   "description": "JSONAPI data from a Pinia store.",
   "keywords": [
