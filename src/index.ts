@@ -18,7 +18,9 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
   return defineStore(resourceType, {
     state: () => {
       return {
-        data: {}
+        data: {},
+        meta: {},
+        links: {}
       }
     },
     getters: {
@@ -52,7 +54,8 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
             type: item.type,
             ...item.attributes,
             ...itemRelationships,
-            _jp: item
+            meta: item.meta,
+            links: item.links
           }
         }
       }
@@ -84,6 +87,9 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
         }
         // Check if there are some included data and add it to the respective store
         processIncludedResources(json, globalApiConf)
+        // Update root meta and links
+        this.meta = json.meta
+        this.links = json.links
         // And return the response
         return json
       },
