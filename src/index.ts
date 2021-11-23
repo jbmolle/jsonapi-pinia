@@ -1,6 +1,7 @@
 import type { ApiConf } from './types/apiConf'
 import { defineStore } from 'pinia'
-import { getUrl } from './utils'
+import { getUrl, processIncludedResources } from './utils'
+import type { DocWithData } from './types/documents'
 import type { ResourceObject, NewResourceObject } from './types/resourceObjects'
 
 export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
@@ -20,7 +21,42 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
         data: {}
       }
     },
-    getters: {},
+    getters: {
+      normalizedItem: (state) => {
+        return (itemId: string) => {
+          const item = state.data[itemId]
+          if (!item) {
+            return undefined
+          }
+          const itemRelationships = {}
+          if (item.relationships) {
+            Object.keys(item.relationships).forEach((key) => {
+              const relData = item.relationships[key].data
+              if (!relData) {
+                itemRelationships[key] = undefined
+              } else {
+                if (Array.isArray(relData)) {
+                  itemRelationships[key] = relData.map((data) => {
+                    const relStore = useJsonApi(data.type, globalApiConf)
+                    return relStore.normalizedItem(data.id)
+                  })
+                } else {
+                  const relStore = useJsonApi(relData.type, globalApiConf)
+                  itemRelationships[key] = relStore.normalizedItem(relData.id)
+                }
+              }
+            })
+          }
+          return {
+            id: item.id,
+            type: item.type,
+            ...item.attributes,
+            ...itemRelationships,
+            _jp: item
+          }
+        }
+      }
+    },
     actions: {
       async index(queryParams?: { [key: string]: any }) {
         const url = getUrl(globalApiConf.baseUrl, `/${resourceType}`)
@@ -36,13 +72,20 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
           return response
         }
         // Else add the element array to the store
-        const json = await response.json()
+        const json: DocWithData = await response.json()
+        const data = json.data as ResourceObject[]
+        // Transform json data array in an object with keys=ids
+        const insertData = data.reduce((acc: any, val: any) => {
+          return { ...acc, [val.id]: val }
+        }, {})
         this.data = {
           ...this.data,
-          ...json.data
+          ...insertData
         }
+        // Check if there are some included data and add it to the respective store
+        processIncludedResources(json, globalApiConf)
         // And return the response
-        return response
+        return json
       },
       async get(id: string, queryParams?: { [key: string]: any }) {
         const url = getUrl(globalApiConf.baseUrl, `/${resourceType}/${id}`)
@@ -58,10 +101,12 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
           return response
         }
         // The api returns one element. Add it to the store with id
-        const json = await response.json()
+        const json: DocWithData = await response.json()
         const elementData = json.data
         this.data[id] = elementData
-        return response
+        // Check if there are some included data and add it to the respective store
+        processIncludedResources(json, globalApiConf)
+        return json
       },
       async create(body: NewResourceObject) {
         const url = getUrl(globalApiConf.baseUrl, `/${resourceType}`)
@@ -76,10 +121,11 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
           const json = await response.json()
           const elementData = json.data
           this.data[elementData.id] = elementData
+          return json
         } else if (response.status === 204) {
           this.data[body.id] = body
+          return body
         }
-        return response
       },
       async update(id: string, body: ResourceObject) {
         const url = getUrl(globalApiConf.baseUrl, `/${resourceType}/${id}`)
@@ -93,11 +139,11 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
         if (response.status === 200) {
           const json = await response.json()
           this.data[id] = json.data
+          return json
         } else if (response.status === 204) {
           // No document is returned so do a get request to update the document in the store
-          this.get(id)
+          return this.get(id)
         }
-        return response
       },
       async delete(id: string) {
         const url = getUrl(globalApiConf.baseUrl, `/${resourceType}/${id}`)
