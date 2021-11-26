@@ -1,10 +1,17 @@
-import type { ApiConf } from './types/apiConf'
+import { watch } from 'vue'
 import { defineStore } from 'pinia'
-import { getUrl, processIncludedResources } from './utils'
+import { useSWRV, LocalStorageCache } from 'swrv'
+import { generateRequests } from './requests'
+import { processIncludedResources } from './utils'
+import type { ApiConf } from './types/apiConf'
 import type { DocWithData } from './types/documents'
 import type { ResourceObject, NewResourceObject } from './types/resourceObjects'
 
-export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
+export const useJsonApi = (
+  resourceType: string,
+  providedApiConf?: ApiConf,
+  cacheKey?: Function
+) => {
   const defaultApiConf = {
     baseUrl: 'http://localhost',
     mode: 'cors',
@@ -15,7 +22,16 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
     ...defaultApiConf,
     ...providedApiConf
   }
-  return defineStore(resourceType, {
+
+  const {
+    indexRequest,
+    getRequest,
+    createRequest,
+    updateRequest,
+    deleteRequest
+  } = generateRequests(resourceType, providedApiConf)
+
+  const store = defineStore(resourceType, {
     state: () => {
       return {
         data: {}
@@ -37,11 +53,11 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
               } else {
                 if (Array.isArray(relData)) {
                   itemRelationships[key] = relData.map((data) => {
-                    const relStore = useJsonApi(data.type, globalApiConf)
+                    const relStore = useJsonApi(data.type, globalApiConf).store
                     return relStore.normalizedItem(data.id)
                   })
                 } else {
-                  const relStore = useJsonApi(relData.type, globalApiConf)
+                  const relStore = useJsonApi(relData.type, globalApiConf).store
                   itemRelationships[key] = relStore.normalizedItem(relData.id)
                 }
               }
@@ -58,21 +74,14 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
       }
     },
     actions: {
-      async index(queryParams?: { [key: string]: any }) {
-        const url = getUrl(globalApiConf.baseUrl, `/${resourceType}`)
-        const conf = { method: 'GET' }
-        if (queryParams) {
-          Object.keys(queryParams).forEach((key) =>
-            url.searchParams.append(key, queryParams[key])
-          )
-        }
-        const response = await fetch(url.href, conf)
+      async index(json: DocWithData) {
+        /*const response = await indexRequest(queryParams)
         // If an error occured, return the response
         if (!response.ok) {
           return response
         }
         // Else add the element array to the store
-        const json: DocWithData = await response.json()
+        const json: DocWithData = await response.json()*/
         const data = json.data as ResourceObject[]
         // Transform json data array in an object with keys=ids
         const insertData = data.reduce((acc: any, val: any) => {
@@ -88,14 +97,7 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
         return json
       },
       async get(id: string, queryParams?: { [key: string]: any }) {
-        const url = getUrl(globalApiConf.baseUrl, `/${resourceType}/${id}`)
-        const conf = { method: 'GET' }
-        if (queryParams) {
-          Object.keys(queryParams).forEach((key) =>
-            url.searchParams.append(key, queryParams[key])
-          )
-        }
-        const response = await fetch(url.href, conf)
+        const response = await getRequest(id, queryParams)
         // If an error occured, return the response
         if (!response.ok) {
           return response
@@ -109,9 +111,7 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
         return json
       },
       async create(body: NewResourceObject) {
-        const url = getUrl(globalApiConf.baseUrl, `/${resourceType}`)
-        const conf = { method: 'POST', body }
-        const response = await fetch(url.href, conf)
+        const response = await createRequest(body)
         // If an error occured, return the response
         if (!response.ok) {
           return response
@@ -128,9 +128,7 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
         }
       },
       async update(id: string, body: ResourceObject) {
-        const url = getUrl(globalApiConf.baseUrl, `/${resourceType}/${id}`)
-        const conf = { method: 'PATCH', body }
-        const response = await fetch(url.href, conf)
+        const response = await updateRequest(id, body)
         // If an error occured, return the response
         if (!response.ok) {
           return response
@@ -146,9 +144,7 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
         }
       },
       async delete(id: string) {
-        const url = getUrl(globalApiConf.baseUrl, `/${resourceType}/${id}`)
-        const conf = { method: 'DELETE' }
-        const response = await fetch(url.href, conf)
+        const response = await deleteRequest(id)
         // If the server respond with 200 or 204 then the deletion was successful
         if (response.ok) {
           delete this.data[id]
@@ -157,4 +153,17 @@ export const useJsonApi = (resourceType: string, providedApiConf?: ApiConf) => {
       }
     }
   })()
+
+  const { data: indexData } = useSWRV(cacheKey ?? resourceType, indexRequest, {
+    cache: new LocalStorageCache('swrv'),
+    shouldRetryOnError: false
+  })
+
+  watch(indexData, (newData) => {
+    store.index(newData)
+  })
+
+  return {
+    store
+  }
 }

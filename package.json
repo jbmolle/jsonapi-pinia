@@ -28,6 +28,9 @@
     "lint": "eslint --ext .ts src/**",
     "test": "jest"
   },
+  "dependencies": {
+    "swrv": "^1.0.0-beta.8"
+  },
   "devDependencies": {
     "@types/jest": "^27.0.2",
     "@typescript-eslint/parser": "^5.4.0",
