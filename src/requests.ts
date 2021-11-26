@@ -14,7 +14,7 @@ export const generateRequests = (
         url.searchParams.append(key, queryParams[key])
       )
     }
-    return fetch(url.href, conf)
+    return fetch(url.href, conf).then((res) => res.json())
   }
 
   const getRequest = (id: string, queryParams?: { [key: string]: any }) => {
@@ -25,25 +25,25 @@ export const generateRequests = (
         url.searchParams.append(key, queryParams[key])
       )
     }
-    return fetch(url.href, conf)
+    return fetch(url.href, conf).then((res) => res.json())
   }
 
   const createRequest = (body: NewResourceObject) => {
     const url = getUrl(globalApiConf.baseUrl, `/${resourceType}`)
     const conf = { method: 'POST', body }
-    return fetch(url.href, conf)
+    return fetch(url.href, conf).then((res) => res.json())
   }
 
   const updateRequest = (id: string, body: ResourceObject) => {
     const url = getUrl(globalApiConf.baseUrl, `/${resourceType}/${id}`)
     const conf = { method: 'PATCH', body }
-    return fetch(url.href, conf)
+    return fetch(url.href, conf).then((res) => res.json())
   }
 
   const deleteRequest = (id: string) => {
     const url = getUrl(globalApiConf.baseUrl, `/${resourceType}/${id}`)
     const conf = { method: 'DELETE' }
-    return fetch(url.href, conf)
+    return fetch(url.href, conf).then((res) => res.json())
   }
 
   return {

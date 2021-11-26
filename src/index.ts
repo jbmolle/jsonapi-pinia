@@ -1,6 +1,7 @@
 import { watch } from 'vue'
 import { defineStore } from 'pinia'
-import { useSWRV, LocalStorageCache } from 'swrv'
+import useSWRV from 'swrv'
+import LocalStorageCache from 'swrv/esm/cache/adapters/localStorage'
 import { generateRequests } from './requests'
 import { processIncludedResources } from './utils'
 import type { ApiConf } from './types/apiConf'
@@ -10,7 +11,7 @@ import type { ResourceObject, NewResourceObject } from './types/resourceObjects'
 export const useJsonApi = (
   resourceType: string,
   providedApiConf?: ApiConf,
-  cacheKey?: Function
+  cacheKey?: () => string
 ) => {
   const defaultApiConf = {
     baseUrl: 'http://localhost',
@@ -160,6 +161,7 @@ export const useJsonApi = (
   })
 
   watch(indexData, (newData) => {
+    console.log(newData)
     store.index(newData)
   })
 
