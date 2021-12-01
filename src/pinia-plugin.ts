@@ -1,13 +1,8 @@
 import { ref, reactive, watch } from 'vue'
 import { PiniaPluginContext, defineStore } from 'pinia'
 import { useQuery, useMutation } from 'vue-query'
-import {
-  indexRequest,
-  getRequest,
-  createRequest,
-  updateRequest,
-  deleteRequest
-} from './requests'
+// prettier-ignore
+import { indexRequest, getRequest, createRequest, updateRequest, deleteRequest } from './requests'
 import { processIndexData, processGetData } from './utils'
 import { ResourceObject, DocWithData, NewResourceObject } from './types'
 
