@@ -28,6 +28,10 @@
     "lint": "eslint --ext .ts src/**",
     "test": "jest"
   },
+  "dependencies": {
+    "vue-query": "^1.14.0",
+    "react-query": "^3.34.0"
+  },
   "devDependencies": {
     "@types/jest": "^27.0.2",
     "@typescript-eslint/parser": "^5.4.0",

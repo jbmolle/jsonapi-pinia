@@ -1,3 +1,4 @@
+export * from './apiConf'
 export * from './documents'
 export * from './errors'
 export * from './links'
