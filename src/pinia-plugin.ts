@@ -23,14 +23,15 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
   store.links = links
   store.$state.links = links
 
+  const normalizationMaxRecursion = options.maxNestedRelationshipsNormalization || 1
   // Function to normalize an JSON:API item
-  store.normalizedItem = (itemId: string) => {
+  store.normalizedItem = (itemId: string, currentRecursion: number = 0) => {
     const item = data.value[itemId]
     if (!item) {
       return undefined
     }
     const itemRelationships = {}
-    if (item.relationships) {
+    if (item.relationships && currentRecursion < maxRecursion) {
       Object.keys(item.relationships).forEach((key) => {
         const relData = item.relationships[key].data
         if (!relData) {
@@ -42,14 +43,14 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
                 query: false
               })
               const relStore = useRelStore()
-              return relStore.normalizedItem(data.id)
+              return relStore.normalizedItem(data.id, currentRecursion + 1)
             })
           } else {
             const useRelStore = defineStore(relData.type, () => ({}), {
               query: false
             })
             const relStore = useRelStore()
-            itemRelationships[key] = relStore.normalizedItem(relData.id)
+            itemRelationships[key] = relStore.normalizedItem(relData.id, currentRecursion + 1)
           }
         }
       })
