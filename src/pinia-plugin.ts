@@ -31,7 +31,7 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
       return undefined
     }
     const itemRelationships = {}
-    if (item.relationships && currentRecursion < maxRecursion) {
+    if (item.relationships && currentRecursion < normalizationMaxRecursion) {
       Object.keys(item.relationships).forEach((key) => {
         const relData = item.relationships[key].data
         if (!relData) {
