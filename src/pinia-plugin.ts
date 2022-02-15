@@ -23,46 +23,41 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
   store.links = links
   store.$state.links = links
 
-  const normalizationMaxRecursion = options.maxNestedRelationshipsNormalization || 1
   // Function to normalize an JSON:API item
-  store.normalizedItem = (itemId: string, currentRecursion: number = 0) => {
+  store.normalizedItem = (itemId: string) => {
     const item = data.value[itemId]
     if (!item) {
       return undefined
     }
-    const itemRelationships = {}
-    if (item.relationships && currentRecursion < normalizationMaxRecursion) {
-      Object.keys(item.relationships).forEach((key) => {
-        const relData = item.relationships[key].data
-        if (!relData) {
-          itemRelationships[key] = undefined
-        } else {
+
+    const handler = {
+      get(target, prop) {
+        if (['id', 'type', 'meta', 'links'].includes(prop)) return target[prop]
+        if (Object.keys(target.attributes || {}).includes(prop)) return target.attributes[prop]
+        if (Object.keys(target.relationships || {}).includes(prop)) {
+          const relData = target.relationships[prop].data
+          if (!relData) return undefined
           if (Array.isArray(relData)) {
-            itemRelationships[key] = relData.map((data) => {
-              const useRelStore = defineStore(data.type, () => ({}), {
+            return relData.map((data2) => {
+              const useRelStore = defineStore(data2.type, () => ({}), {
                 query: false
               })
               const relStore = useRelStore()
-              return relStore.normalizedItem(data.id, currentRecursion + 1)
+              return relStore.normalizedItem(data2.id)
             })
-          } else {
-            const useRelStore = defineStore(relData.type, () => ({}), {
-              query: false
-            })
-            const relStore = useRelStore()
-            itemRelationships[key] = relStore.normalizedItem(relData.id, currentRecursion + 1)
           }
+          // Not array
+          const useRelStore = defineStore(relData.type, () => ({}), {
+            query: false
+          })
+          const relStore = useRelStore()
+          return relStore.normalizedItem(relData.id)
         }
-      })
+        return undefined
+      }
     }
-    return {
-      id: item.id,
-      type: item.type,
-      ...item.attributes,
-      ...itemRelationships,
-      meta: item.meta,
-      links: item.links
-    }
+
+    return new Proxy(item, handler)
   }
 
   // Add the actions if the store is called from a setup function
