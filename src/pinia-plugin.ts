@@ -85,6 +85,10 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
     store.$state.indexQuery = indexQuery
     store.index = async (queryParams: { [key: string]: any } = {}) => {
       indexKey[1] = queryParams
+      // Reset the data to the cache of vue-query because it could have been changed by another store with relationships
+      if (indexQuery.data.value) {
+        processIndexData(indexQuery.data.value, context)
+      }
     }
 
     watch(indexQuery.data, (newData: DocWithData) => {
@@ -108,6 +112,10 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
     ) => {
       getKey[1] = id
       getKey[2] = queryParams
+      // Reset the data to the cache of vue-query because it could have been changed by another store with relationships
+      if (getQuery.data.value) {
+        processIndexData(getQuery.data.value, context)
+      }
     }
 
     watch(getQuery.data, (newData: DocWithData) => {
