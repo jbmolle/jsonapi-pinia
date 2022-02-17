@@ -114,7 +114,7 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
       getKey[2] = queryParams
       // Reset the data to the cache of vue-query because it could have been changed by another store with relationships
       if (getQuery.data.value) {
-        processIndexData(getQuery.data.value, context)
+        processGetData(getQuery.data.value, context)
       }
     }
 
