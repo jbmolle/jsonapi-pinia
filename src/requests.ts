@@ -14,7 +14,12 @@ export const indexRequest = async (
   queryParams: { [key: string]: any } = {}
 ) => {
   const url = getUrl(apiConf.baseUrl, `/${resourceType}`)
-  const conf = { method: 'GET' }
+  const conf = {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/vnd.api+json'
+    }
+  }
   Object.keys(queryParams).forEach((key) =>
     url.searchParams.append(key, queryParams[key])
   )
@@ -33,7 +38,12 @@ export const getRequest = async (
   queryParams: { [key: string]: any } = {}
 ) => {
   const url = getUrl(apiConf.baseUrl, `/${resourceType}/${id}`)
-  const conf = { method: 'GET' }
+  const conf = {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/vnd.api+json'
+    }
+  }
   Object.keys(queryParams).forEach((key) =>
     url.searchParams.append(key, queryParams[key])
   )
@@ -51,7 +61,13 @@ export const createRequest = async (
   body: NewResourceObject
 ) => {
   const url = getUrl(apiConf.baseUrl, `/${resourceType}`)
-  const conf = { method: 'POST', body: JSON.stringify(body) }
+  const conf = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/vnd.api+json'
+    },
+    body: JSON.stringify(body)
+  }
   const response = await fetch(url.href, conf)
   if (!response.ok) {
     throw new Error(
@@ -69,7 +85,12 @@ export const updateRequest = async (
   body: ResourceObject
 ) => {
   const url = getUrl(apiConf.baseUrl, `/${resourceType}/${id}`)
-  const conf = { method: 'PATCH', body: JSON.stringify(body) }
+  const conf = {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/vnd.api+json'
+    },
+    body: JSON.stringify(body) }
   const response = await fetch(url.href, conf)
   if (!response.ok) {
     throw new Error(
@@ -83,7 +104,12 @@ export const updateRequest = async (
 
 export const deleteRequest = async (resourceType: string, id: string) => {
   const url = getUrl(apiConf.baseUrl, `/${resourceType}/${id}`)
-  const conf = { method: 'DELETE' }
+  const conf = {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/vnd.api+json'
+    }
+  }
   const response = await fetch(url.href, conf)
   if (!response.ok) {
     throw new Error(
