@@ -31,8 +31,8 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
     }
 
     const handler = {
-      get(target, prop) {
-        if (['id', 'type', 'meta', 'links'].includes(prop)) return target[prop]
+      get(target, prop, receiver) {
+        if (['id', 'type', 'meta', 'links'].includes(prop)) return Reflect.get(target, prop, receiver)
         if (Object.keys(target.attributes || {}).includes(prop)) return target.attributes[prop]
         if (Object.keys(target.relationships || {}).includes(prop)) {
           const relData = target.relationships[prop].data
@@ -54,9 +54,23 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
           return relStore.normalizedItem(relData.id)
         }
         return undefined
+      },
+      has(target, prop) {
+        return true
+      },
+      ownKeys(target) {
+        const targetAttributeKeys = Object.keys(target.attributes || {})
+        const targetRelationshipKeys = Object.keys(target.relationships || {})
+        return ['id', 'type', 'meta', 'links', ...targetAttributeKeys, ...targetRelationshipKeys]
+      },
+      getOwnPropertyDescriptor(target, prop) {
+        return {
+          value: handler.get(target, prop),
+          enumerable: true,
+          configurable: true
+        }
       }
     }
-
     return new Proxy(item, handler)
   }
 
