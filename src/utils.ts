@@ -1,12 +1,15 @@
 /**
  * Utility functions
  */
-import type { DocWithData, ResourceObject } from './types'
 import { defineStore } from 'pinia'
-import type { PiniaPluginContext } from 'pinia'
+import type { Store } from 'pinia'
+import type { DocWithData, ResourceObject } from './types'
 
 export const getUrl = (baseUrl: string, url: string) => {
   if (url.startsWith('/')) {
+    if (baseUrl.endsWith('/')) {
+      return new URL(baseUrl.slice(0, -1) + url)
+    }
     return new URL(baseUrl + url)
   }
   return new URL(url)
@@ -15,19 +18,14 @@ export const getUrl = (baseUrl: string, url: string) => {
 export const processIncludedResources = (doc: DocWithData) => {
   if (doc.included) {
     doc.included.forEach((includedResource) => {
-      const useIncludedStore = defineStore(includedResource.type, () => ({}), {
-        query: false
-      })
+      const useIncludedStore = defineStore(includedResource.type, {})
       const includedStore = useIncludedStore()
       includedStore.data[includedResource.id] = includedResource
     })
   }
 }
 
-export const processIndexData = async (
-  json: DocWithData,
-  { store }: PiniaPluginContext
-) => {
+export const processIndexData = async (json: DocWithData, store: Store) => {
   const jsonData = json.data as ResourceObject[]
   // Transform json data array in an object with keys=ids
   const insertData = jsonData.reduce((acc: any, val: any) => {
@@ -44,10 +42,7 @@ export const processIndexData = async (
   store.links = json.links
 }
 
-export const processGetData = async (
-  json: DocWithData,
-  { store }: PiniaPluginContext
-) => {
+export const processGetData = async (json: DocWithData, store: Store) => {
   const elementData = json.data as ResourceObject
   store.data[elementData.id] = elementData
   // Check if there are some included data and add it to the respective store
