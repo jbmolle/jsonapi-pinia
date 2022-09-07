@@ -21,13 +21,13 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
         if (!relData) return undefined
         if (Array.isArray(relData)) {
           return relData.map((data2) => {
-            const useRelStore = defineStore(data2.type)
+            const useRelStore = defineStore(data2.type, {})
             const relStore = useRelStore()
             return relStore.normalizedData.value[data2.id]
           })
         }
         // Not array
-        const useRelStore = defineStore(relData.type)
+        const useRelStore = defineStore(relData.type, {})
         const relStore = useRelStore()
         return relStore.normalizedData.value[relData.id]
       }
@@ -63,8 +63,8 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
 
   store.data = data
   store.$state.data = data
-  store.normalizedData = data
-  store.$state.normalizedData = data
+  store.normalizedData = normalizedData
+  store.$state.normalizedData = normalizedData
   store.meta = meta
   store.$state.meta = meta
   store.links = links
