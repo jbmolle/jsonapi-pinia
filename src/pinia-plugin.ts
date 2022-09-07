@@ -23,13 +23,13 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
           return relData.map((data2) => {
             const useRelStore = defineStore(data2.type, {})
             const relStore = useRelStore()
-            return relStore.normalizedData.value[data2.id]
+            return relStore.normalizedData[data2.id]
           })
         }
         // Not array
         const useRelStore = defineStore(relData.type, {})
         const relStore = useRelStore()
-        return relStore.normalizedData.value[relData.id]
+        return relStore.normalizedData[relData.id]
       }
       return undefined
     },
