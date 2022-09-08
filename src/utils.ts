@@ -2,8 +2,7 @@
  * Utility functions
  */
 import { defineStore } from 'pinia'
-import type { Store } from 'pinia'
-import type { DocWithData, ResourceObject } from './types'
+import type { Store, DocWithData, ResourceObject } from './types'
 
 export const getUrl = (baseUrl: string, url: string) => {
   if (url.startsWith('/')) {
@@ -15,11 +14,11 @@ export const getUrl = (baseUrl: string, url: string) => {
   return new URL(url)
 }
 
-export const processIncludedResources = (doc: DocWithData) => {
-  if (doc.included) {
+export const processIncludedResources = (doc?: DocWithData) => {
+  if (doc?.included) {
     doc.included.forEach((includedResource) => {
       const useIncludedStore = defineStore(includedResource.type, {})
-      const includedStore = useIncludedStore()
+      const includedStore = useIncludedStore() as Store
       includedStore.data[includedResource.id] = includedResource
     })
   }

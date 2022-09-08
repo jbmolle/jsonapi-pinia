@@ -1,11 +1,12 @@
 import 'pinia'
 
+export type Store = PiniaPluginContext['store']
+
 declare module 'pinia' {
-  /* eslint-disable  no-unused-vars */
   export interface PiniaCustomProperties<Id, S, G, A> {
     $options: {
       id: Id
-      state?: () => S
+      state?: () => S & { data: any }
       getters?: G
       actions?: A & { normalizedItem: (itemId: string) => void }
     }

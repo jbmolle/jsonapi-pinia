@@ -1,13 +1,25 @@
+import { defu } from 'defu'
+import { VueQueryPlugin } from 'vue-query'
 import { JsonApiPiniaPlugin } from './pinia-plugin'
 import { setApiConf } from './requests'
+import type { App } from 'vue'
+import type { Pinia } from 'pinia'
+import type { ApiConf } from './types'
+
+interface Options {
+  pinia: Pinia,
+  apiConf?: ApiConf
+}
 
 export default {
-  install: (app, options) => {
+  install: (app: App, options: Options) => {
     const pinia = options.pinia
     pinia.use(JsonApiPiniaPlugin)
-    const apiConf = options.apiConf || {}
     const defaultApiConf = { baseUrl: 'http://localhost' }
-    setApiConf({ ...defaultApiConf, ...apiConf })
+    const apiConf = defu(options.apiConf, defaultApiConf)
+    setApiConf(apiConf)
+    app.use(VueQueryPlugin)
+    app.use(pinia)
   }
 }
 

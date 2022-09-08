@@ -13,7 +13,7 @@ export const indexRequest = async (
   resourceType: string,
   queryParams: { [key: string]: any } = {}
 ) => {
-  const url = getUrl(apiConf.baseUrl, `/${resourceType}`)
+  const url = getUrl(apiConf.baseUrl || '', `/${resourceType}`)
   const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'GET', headers }
@@ -34,7 +34,7 @@ export const getRequest = async (
   id: string,
   queryParams: { [key: string]: any } = {}
 ) => {
-  const url = getUrl(apiConf.baseUrl, `/${resourceType}/${id}`)
+  const url = getUrl(apiConf.baseUrl || '', `/${resourceType}/${id}`)
   const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'GET', headers }
@@ -54,7 +54,7 @@ export const createRequest = async (
   resourceType: string,
   body: NewResourceObject
 ) => {
-  const url = getUrl(apiConf.baseUrl, `/${resourceType}`)
+  const url = getUrl(apiConf.baseUrl || '', `/${resourceType}`)
   const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'POST', headers, body: JSON.stringify(body) }
@@ -74,7 +74,7 @@ export const updateRequest = async (
   id: string,
   body: ResourceObject
 ) => {
-  const url = getUrl(apiConf.baseUrl, `/${resourceType}/${id}`)
+  const url = getUrl(apiConf.baseUrl || '', `/${resourceType}/${id}`)
   const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'PATCH', headers, body: JSON.stringify(body) }
@@ -90,7 +90,7 @@ export const updateRequest = async (
 }
 
 export const deleteRequest = async (resourceType: string, id: string) => {
-  const url = getUrl(apiConf.baseUrl, `/${resourceType}/${id}`)
+  const url = getUrl(apiConf.baseUrl || '', `/${resourceType}/${id}`)
   const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'DELETE', headers }
