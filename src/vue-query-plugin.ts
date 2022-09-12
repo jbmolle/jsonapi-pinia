@@ -1,5 +1,6 @@
 import { reactive, watch } from 'vue'
 import { useQuery, useMutation } from 'vue-query'
+import { defu } from 'defu'
 // prettier-ignore
 import { indexRequest, getRequest, createRequest, updateRequest, deleteRequest } from './requests'
 import { processIndexData, processGetData } from './utils'
@@ -12,6 +13,18 @@ interface QueriesOptions {
   create?: Omit<UseMutationOptions<any, unknown, any, unknown>, "mutationFn">
   update?: Omit<UseMutationOptions<any, unknown, { id: string, body: any }, unknown>, "mutationFn">
   delete?: Omit<UseMutationOptions<any, unknown, string, unknown>, "mutationFn">
+}
+
+const getNullKeys = (element?: object) => Object.entries(element ?? {}).filter(entry => entry[1] === null).map(entry => entry[0])
+const removeNullKeys = (receivedObject?: any, currentObject?: any) => {
+  const nullAttributeKeys = getNullKeys(receivedObject?.attributes)
+  const nullRelationshipKeys = getNullKeys(receivedObject?.relationships)
+  if (!currentObject) return currentObject
+  const attributes = !!currentObject?.attributes ? {} : { ...currentObject.attributes }
+  const relationships = !!currentObject?.relationships ? {} : { ...currentObject.relationships }
+  nullAttributeKeys.forEach(key => delete attributes[key])
+  nullRelationshipKeys.forEach(key => delete relationships[key])
+  return { ...currentObject, attributes, relationships }
 }
 
 export const storeVueQuery = (
@@ -78,10 +91,13 @@ export const storeVueQuery = (
     {
       onSuccess: (json: DocWithData | string, body: NewResourceObject) => {
         if (typeof json === 'string') {
-          store.data[body.id || ''] = body
+          const currentData = store.data[body.id || '']
+          const transformedData = removeNullKeys(body, currentData)
+          store.data[body.id || ''] = defu(body, transformedData)
         } else {
           const elementData = json.data as ResourceObject
-          store.data[elementData.id] = elementData
+          const transformedData = removeNullKeys(elementData, store.data[elementData.id])
+          store.data[elementData.id] = defu(elementData, transformedData)
         }
       },
       ...queryOptions?.create
@@ -100,7 +116,8 @@ export const storeVueQuery = (
           store.get(variables.id)
         } else {
           const elementData = json.data as ResourceObject
-          store.data[elementData.id] = elementData
+          const transformedData = removeNullKeys(elementData, store.data[elementData.id])
+          store.data[elementData.id] = defu(elementData, transformedData)
         }
       },
       ...queryOptions?.update
