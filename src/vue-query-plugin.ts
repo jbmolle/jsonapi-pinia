@@ -78,10 +78,10 @@ export const storeVueQuery = (
     {
       onSuccess: (json: DocWithData | string, body: NewResourceObject) => {
         if (typeof json === 'string') {
-          store.data.value[body.id || ''] = body
+          store.data[body.id || ''] = body
         } else {
           const elementData = json.data as ResourceObject
-          store.data.value[elementData.id] = elementData
+          store.data[elementData.id] = elementData
         }
       },
       ...queryOptions?.create
@@ -100,7 +100,7 @@ export const storeVueQuery = (
           store.get(variables.id)
         } else {
           const elementData = json.data as ResourceObject
-          store.data.value[elementData.id] = elementData
+          store.data[elementData.id] = elementData
         }
       },
       ...queryOptions?.update
@@ -114,7 +114,7 @@ export const storeVueQuery = (
     (id: string) => deleteRequest(resourceType, id),
     {
       onSuccess: (_: any, id: string) => {
-        delete store.data.value[id]
+        delete store.data[id]
       },
       ...queryOptions?.delete
     }
