@@ -20,8 +20,8 @@ const removeNullKeys = (receivedObject?: any, currentObject?: any) => {
   const nullAttributeKeys = getNullKeys(receivedObject?.attributes)
   const nullRelationshipKeys = getNullKeys(receivedObject?.relationships)
   if (!currentObject) return currentObject
-  const attributes = !!currentObject?.attributes ? {} : { ...currentObject.attributes }
-  const relationships = !!currentObject?.relationships ? {} : { ...currentObject.relationships }
+  const attributes = !!currentObject?.attributes ? { ...currentObject.attributes } : {}
+  const relationships = !!currentObject?.relationships ? { ...currentObject.relationships } : {}
   nullAttributeKeys.forEach(key => delete attributes[key])
   nullRelationshipKeys.forEach(key => delete relationships[key])
   return { ...currentObject, attributes, relationships }
