@@ -1,6 +1,5 @@
-import { reactive, watch } from 'vue'
+import { reactive, watch, unref } from 'vue'
 import { useQuery, useMutation } from 'vue-query'
-import { defu } from 'defu'
 // prettier-ignore
 import { indexRequest, getRequest, createRequest, updateRequest, deleteRequest } from './requests'
 import { processIndexData, processGetData } from './utils'
@@ -15,16 +14,27 @@ interface QueriesOptions {
   delete?: Omit<UseMutationOptions<any, unknown, string, unknown>, "mutationFn">
 }
 
-const getNullKeys = (element?: object) => Object.entries(element ?? {}).filter(entry => entry[1] === null).map(entry => entry[0])
-const removeNullKeys = (receivedObject?: any, currentObject?: any) => {
-  const nullAttributeKeys = getNullKeys(receivedObject?.attributes)
-  const nullRelationshipKeys = getNullKeys(receivedObject?.relationships)
-  if (!currentObject) return currentObject
-  const attributes = !!currentObject?.attributes ? { ...currentObject.attributes } : {}
-  const relationships = !!currentObject?.relationships ? { ...currentObject.relationships } : {}
-  nullAttributeKeys.forEach(key => delete attributes[key])
-  nullRelationshipKeys.forEach(key => delete relationships[key])
-  return { ...currentObject, attributes, relationships }
+const jsonApiMerge = (mainObject: ResourceObject, mergingObject: ResourceObject) => {
+  const patch = {
+    ...mainObject,
+    id: mainObject.id,
+    type: mainObject.type,
+    attributes: { ...(mainObject.attributes ?? {}) },
+    relationships: { ...(mainObject.relationships ?? {}) },
+  }
+  const attributes = mergingObject.attributes ?? {}
+  const relationships = mergingObject.relationships ?? {}
+  Object.keys(attributes).forEach(key => {
+    if (attributes[key] !== undefined) {
+      patch.attributes[key] = attributes[key]
+    }
+  })
+  Object.keys(relationships).forEach(key => {
+    if (relationships[key] !== undefined) {
+      patch.relationships[key] = relationships[key]
+    }
+  })
+  return patch
 }
 
 export const storeVueQuery = (
@@ -91,13 +101,10 @@ export const storeVueQuery = (
     {
       onSuccess: (json: DocWithData | string, body: NewResourceObject) => {
         if (typeof json === 'string') {
-          const currentData = store.data[body.id || '']
-          const transformedData = removeNullKeys(body, currentData)
-          store.data[body.id || ''] = defu(body, transformedData)
+          store.data[body.id || ''] = body
         } else {
           const elementData = json.data as ResourceObject
-          const transformedData = removeNullKeys(elementData, store.data[elementData.id])
-          store.data[elementData.id] = defu(elementData, transformedData)
+          store.data[elementData.id] = elementData
         }
       },
       ...queryOptions?.create
@@ -116,8 +123,7 @@ export const storeVueQuery = (
           store.get(variables.id)
         } else {
           const elementData = json.data as ResourceObject
-          const transformedData = removeNullKeys(elementData, store.data[elementData.id])
-          store.data[elementData.id] = defu(elementData, transformedData)
+          store.data[elementData.id] = jsonApiMerge(store.data[elementData.id], elementData)
         }
       },
       ...queryOptions?.update
