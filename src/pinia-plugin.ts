@@ -4,7 +4,7 @@ import type { PiniaPluginContext } from 'pinia'
 import type { ResourceObject, RelationshipsWithData, Store } from './types'
 
 export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
-  const { store } = context
+  const { store, options } = context
 
   // Store JSON:API root data (when returning a collection)
   const data = ref({})
@@ -20,15 +20,18 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
       if (Object.keys(target.relationships || {}).includes(prop)) {
         const relData = (<RelationshipsWithData>target.relationships?.[prop])?.data
         if (!relData) return undefined
+        const storeInitMap = options.storeInitMap ?? {}
         if (Array.isArray(relData)) {
           return relData.map((data2: ResourceObject) => {
-            const useRelStore = defineStore(data2.type, {})
+            const storeInit = storeInitMap[data2.type] || {}
+            const useRelStore = defineStore(data2.type, storeInit)
             const relStore = useRelStore() as Store
             return relStore.normalizedData[data2.id]
           })
         }
         // Not array
-        const useRelStore = defineStore(relData.type, {})
+        const storeInit = storeInitMap[relData.type] || {}
+        const useRelStore = defineStore(relData.type, storeInit)
         const relStore = useRelStore() as Store
         return relStore.normalizedData[relData.id]
       }

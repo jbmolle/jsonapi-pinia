@@ -13,5 +13,6 @@ declare module 'pinia' {
   }
   export interface DefineStoreOptionsBase<S, Store> {
     resourceType?: string
+    storeInitMap?: { [key: string]: any }
   }
 }
