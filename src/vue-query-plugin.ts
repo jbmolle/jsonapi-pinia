@@ -14,6 +14,12 @@ interface QueriesOptions {
   delete?: Omit<UseMutationOptions<any, unknown, string, unknown>, "mutationFn">
 }
 
+let storeInitMap = {}
+
+export const setStoreInitMap = (initMap: any) => {
+  storeInitMap = initMap
+}
+
 const jsonApiMerge = (mainObject: ResourceObject, mergingObject: ResourceObject) => {
   const patch = {
     ...mainObject,
@@ -59,14 +65,14 @@ export const storeVueQuery = (
     // Reset the data to the cache of vue-query because it could have been changed by another store with relationships
     const data = <DocWithData | null>(indexQuery.data.value)
     if (data) {
-      processIndexData(data, store)
+      processIndexData(data, store, storeInitMap)
     }
   }
 
   watch(indexQuery.data, (newData: any) => {
     const data = <DocWithData | null>newData
     if (data) {
-      processIndexData(data, store)
+      processIndexData(data, store, storeInitMap)
     }
   })
 
@@ -85,14 +91,14 @@ export const storeVueQuery = (
     // Reset the data to the cache of vue-query because it could have been changed by another store with relationships
     const data = <DocWithData | null>(getQuery.data.value)
     if (data) {
-      processGetData(data, store)
+      processGetData(data, store, storeInitMap)
     }
   }
 
   watch(getQuery.data, (newData: any) => {
     const data = <DocWithData | null>newData
     if (data) {
-      processGetData(data, store)
+      processGetData(data, store, storeInitMap)
     }
   })
 

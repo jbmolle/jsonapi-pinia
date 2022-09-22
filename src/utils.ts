@@ -14,17 +14,18 @@ export const getUrl = (baseUrl: string, url: string) => {
   return new URL(url)
 }
 
-export const processIncludedResources = (doc?: DocWithData) => {
+export const processIncludedResources = (storeInitMap: any, doc?: DocWithData) => {
   if (doc?.included) {
     doc.included.forEach((includedResource) => {
-      const useIncludedStore = defineStore(includedResource.type, {})
+      const resourceType = includedResource.type
+      const useIncludedStore = defineStore(resourceType, storeInitMap[resourceType] || {})
       const includedStore = useIncludedStore() as Store
       includedStore.data[includedResource.id] = includedResource
     })
   }
 }
 
-export const processIndexData = async (json: DocWithData, store: Store) => {
+export const processIndexData = async (json: DocWithData, store: Store, storeInitMap: any) => {
   const jsonData = json.data as ResourceObject[]
   // Transform json data array in an object with keys=ids
   const insertData = jsonData.reduce((acc: any, val: any) => {
@@ -35,15 +36,15 @@ export const processIndexData = async (json: DocWithData, store: Store) => {
     ...insertData
   }
   // Check if there are some included data and add it to the respective store
-  processIncludedResources(json)
+  processIncludedResources(storeInitMap, json)
   // Update root meta and links
   store.meta = json.meta
   store.links = json.links
 }
 
-export const processGetData = async (json: DocWithData, store: Store) => {
+export const processGetData = async (json: DocWithData, store: Store, storeInitMap: any) => {
   const elementData = json.data as ResourceObject
   store.data[elementData.id] = elementData
   // Check if there are some included data and add it to the respective store
-  processIncludedResources(json)
+  processIncludedResources(storeInitMap, json)
 }
