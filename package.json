@@ -1,6 +1,6 @@
 {
   "name": "jsonapi-pinia",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "description": "JSONAPI data from a Pinia store.",
   "keywords": [
     "vue",
