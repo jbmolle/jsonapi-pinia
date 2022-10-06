@@ -8,7 +8,7 @@ import type { Pinia } from 'pinia'
 import type { ApiConf } from './types'
 
 interface Options {
-  pinia: Pinia,
+  pinia: Pinia
   apiConf?: ApiConf
   storeInitMap?: any
 }
