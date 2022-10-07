@@ -1,4 +1,4 @@
-import { reactive, watch, unref } from 'vue'
+import { reactive, watch } from 'vue'
 import { useQuery, useMutation } from '@tanstack/vue-query'
 // prettier-ignore
 import { indexRequest, getRequest, createRequest, updateRequest, deleteRequest } from './requests'
@@ -7,11 +7,20 @@ import type { UseQueryOptions, UseMutationOptions } from '@tanstack/vue-query'
 import type { ResourceObject, DocWithData, NewResourceObject } from './types'
 
 interface QueriesOptions {
-  index?: Omit<UseQueryOptions<any, unknown, unknown, any>, "queryKey" | "queryFn">
-  get?: Omit<UseQueryOptions<any, unknown, unknown, any>, "queryKey" | "queryFn">
-  create?: Omit<UseMutationOptions<any, unknown, any, unknown>, "mutationFn">
-  update?: Omit<UseMutationOptions<any, unknown, { id: string, body: any }, unknown>, "mutationFn">
-  delete?: Omit<UseMutationOptions<any, unknown, string, unknown>, "mutationFn">
+  index?: Omit<
+    UseQueryOptions<any, unknown, unknown, any>,
+    'queryKey' | 'queryFn'
+  >
+  get?: Omit<
+    UseQueryOptions<any, unknown, unknown, any>,
+    'queryKey' | 'queryFn'
+  >
+  create?: Omit<UseMutationOptions<any, unknown, any, unknown>, 'mutationFn'>
+  update?: Omit<
+    UseMutationOptions<any, unknown, { id: string; body: any }, unknown>,
+    'mutationFn'
+  >
+  delete?: Omit<UseMutationOptions<any, unknown, string, unknown>, 'mutationFn'>
 }
 
 let storeInitMap = {}
@@ -20,22 +29,25 @@ export const setStoreInitMap = (initMap: any) => {
   storeInitMap = initMap
 }
 
-const jsonApiMerge = (mainObject: ResourceObject, mergingObject: ResourceObject) => {
+const jsonApiMerge = (
+  mainObject: ResourceObject,
+  mergingObject: ResourceObject
+) => {
   const patch = {
     ...mainObject,
     id: mainObject.id,
     type: mainObject.type,
     attributes: { ...(mainObject.attributes ?? {}) },
-    relationships: { ...(mainObject.relationships ?? {}) },
+    relationships: { ...(mainObject.relationships ?? {}) }
   }
   const attributes = mergingObject.attributes ?? {}
   const relationships = mergingObject.relationships ?? {}
-  Object.keys(attributes).forEach(key => {
+  Object.keys(attributes).forEach((key) => {
     if (attributes[key] !== undefined) {
       patch.attributes[key] = attributes[key]
     }
   })
-  Object.keys(relationships).forEach(key => {
+  Object.keys(relationships).forEach((key) => {
     if (relationships[key] !== undefined) {
       patch.relationships[key] = relationships[key]
     }
@@ -63,7 +75,7 @@ export const storeVueQuery = (
   const index = async (queryParams: { [key: string]: any } = {}) => {
     indexKey[1] = queryParams
     // Reset the data to the cache of vue-query because it could have been changed by another store with relationships
-    const data = <DocWithData | null>(indexQuery.data.value)
+    const data = <DocWithData | null>indexQuery.data.value
     if (data) {
       processIndexData(data, store, storeInitMap)
     }
@@ -89,7 +101,7 @@ export const storeVueQuery = (
     getKey[1] = id
     getKey[2] = queryParams
     // Reset the data to the cache of vue-query because it could have been changed by another store with relationships
-    const data = <DocWithData | null>(getQuery.data.value)
+    const data = <DocWithData | null>getQuery.data.value
     if (data) {
       processGetData(data, store, storeInitMap)
     }
@@ -129,7 +141,10 @@ export const storeVueQuery = (
           store.get(variables.id)
         } else {
           const elementData = json.data as ResourceObject
-          store.data[elementData.id] = jsonApiMerge(store.data[elementData.id], elementData)
+          store.data[elementData.id] = jsonApiMerge(
+            store.data[elementData.id],
+            elementData
+          )
         }
       },
       ...queryOptions?.update

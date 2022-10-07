@@ -18,7 +18,8 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
       if (Object.keys(target.attributes || {}).includes(prop))
         return target.attributes?.[prop]
       if (Object.keys(target.relationships || {}).includes(prop)) {
-        const relData = (<RelationshipsWithData>target.relationships?.[prop])?.data
+        const relData = (<RelationshipsWithData>target.relationships?.[prop])
+          ?.data
         if (!relData) return undefined
         const storeInitMap = options.storeInitMap ?? {}
         if (Array.isArray(relData)) {
@@ -61,8 +62,14 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
     }
   }
 
-  const normalizedData = computed<any>(() => Object.values(data.value)
-    .reduce((acc: any, val: any) => ({ ...acc, [val.id]: new Proxy(val, normalizeHandler) }), {})
+  const normalizedData = computed<any>(() =>
+    Object.values(data.value).reduce(
+      (acc: any, val: any) => ({
+        ...acc,
+        [val.id]: new Proxy(val, normalizeHandler)
+      }),
+      {}
+    )
   )
 
   store.data = data

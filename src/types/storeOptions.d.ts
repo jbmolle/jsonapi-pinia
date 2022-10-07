@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import 'pinia'
 
 export type Store = PiniaPluginContext['store']
