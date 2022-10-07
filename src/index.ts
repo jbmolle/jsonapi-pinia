@@ -1,5 +1,5 @@
 import { defu } from 'defu'
-import { VueQueryPlugin } from 'vue-query'
+import { VueQueryPlugin } from '@tanstack/vue-query'
 import { JsonApiPiniaPlugin } from './pinia-plugin'
 import { setApiConf } from './requests'
 import { setStoreInitMap } from './vue-query-plugin'

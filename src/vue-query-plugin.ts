@@ -1,9 +1,9 @@
 import { reactive, watch, unref } from 'vue'
-import { useQuery, useMutation } from 'vue-query'
+import { useQuery, useMutation } from '@tanstack/vue-query'
 // prettier-ignore
 import { indexRequest, getRequest, createRequest, updateRequest, deleteRequest } from './requests'
 import { processIndexData, processGetData } from './utils'
-import type { UseQueryOptions, UseMutationOptions } from 'vue-query'
+import type { UseQueryOptions, UseMutationOptions } from '@tanstack/vue-query'
 import type { ResourceObject, DocWithData, NewResourceObject } from './types'
 
 interface QueriesOptions {

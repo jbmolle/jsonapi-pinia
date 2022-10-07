@@ -30,8 +30,7 @@
   },
   "dependencies": {
     "defu": "^6.1.0",
-    "vue-query": "^2.0.0-beta.6",
-    "react-query": "^3.39.2"
+    "@tanstack/vue-query": "^4.10.1"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",
