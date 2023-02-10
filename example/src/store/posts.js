@@ -1,9 +1,9 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia'
 
 export const usePostsStore = defineStore('posts', {
-    actions: {
-        test() {
-            console.log('hi')
-        }
+  actions: {
+    test() {
+      console.log('hi')
     }
+  }
 })

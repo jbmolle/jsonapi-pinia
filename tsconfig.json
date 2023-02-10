@@ -7,16 +7,9 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    },
+      "@/*": ["src/*"]
+    }
   },
-  "include": [
-    "@/types/**/*.ts",
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["@/types/**/*.ts", "src/**/*.ts"],
+  "exclude": ["node_modules"]
 }

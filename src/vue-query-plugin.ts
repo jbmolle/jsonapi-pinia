@@ -2,7 +2,7 @@ import { reactive, watch } from 'vue'
 import { useQuery, useMutation } from '@tanstack/vue-query'
 // prettier-ignore
 import { indexRequest, getRequest, createRequest, updateRequest, deleteRequest } from './requests'
-import { processIndexData, processGetData } from './utils'
+import { processIndexData, processGetData, processUpdateData } from './utils'
 import type { UseQueryOptions, UseMutationOptions } from '@tanstack/vue-query'
 import type { ResourceObject, DocWithData, NewResourceObject } from './types'
 
@@ -10,49 +10,34 @@ interface QueriesOptions {
   index?: Omit<
     UseQueryOptions<any, unknown, unknown, any>,
     'queryKey' | 'queryFn'
-  >
+  > & { merge?: boolean }
   get?: Omit<
     UseQueryOptions<any, unknown, unknown, any>,
     'queryKey' | 'queryFn'
-  >
-  create?: Omit<UseMutationOptions<any, unknown, any, unknown>, 'mutationFn'>
-  update?: Omit<
-    UseMutationOptions<any, unknown, { id: string; body: any }, unknown>,
+  > & { merge?: boolean }
+  create?: Omit<
+    UseMutationOptions<any, unknown, { body: any; headers: Headers }, unknown>,
     'mutationFn'
   >
-  delete?: Omit<UseMutationOptions<any, unknown, string, unknown>, 'mutationFn'>
+  update?: Omit<
+    UseMutationOptions<
+      any,
+      unknown,
+      { id: string; body: ResourceObject; headers: Headers },
+      unknown
+    >,
+    'mutationFn'
+  >
+  delete?: Omit<
+    UseMutationOptions<any, unknown, { id: string; headers: Headers }, unknown>,
+    'mutationFn'
+  >
 }
 
 let storeInitMap = {}
 
 export const setStoreInitMap = (initMap: any) => {
   storeInitMap = initMap
-}
-
-const jsonApiMerge = (
-  mainObject: ResourceObject,
-  mergingObject: ResourceObject
-) => {
-  const patch = {
-    ...mainObject,
-    id: mainObject.id,
-    type: mainObject.type,
-    attributes: { ...(mainObject.attributes ?? {}) },
-    relationships: { ...(mainObject.relationships ?? {}) }
-  }
-  const attributes = mergingObject.attributes ?? {}
-  const relationships = mergingObject.relationships ?? {}
-  Object.keys(attributes).forEach((key) => {
-    if (attributes[key] !== undefined) {
-      patch.attributes[key] = attributes[key]
-    }
-  })
-  Object.keys(relationships).forEach((key) => {
-    if (relationships[key] !== undefined) {
-      patch.relationships[key] = relationships[key]
-    }
-  })
-  return patch
 }
 
 export const storeVueQuery = (
@@ -75,16 +60,18 @@ export const storeVueQuery = (
   const index = async (queryParams: { [key: string]: any } = {}) => {
     indexKey[1] = queryParams
     // Reset the data to the cache of vue-query because it could have been changed by another store with relationships
-    const data = <DocWithData | null>indexQuery.data.value
+    // Test: Let the user choose if she wants a merge or a replace when executing a query.
+    /*const data = <DocWithData | null>indexQuery.data.value
     if (data) {
-      processIndexData(data, store, storeInitMap)
-    }
+      processIndexData(data, store, { storeInitMap, merge: true })
+    }*/
   }
 
   watch(indexQuery.data, (newData: any) => {
     const data = <DocWithData | null>newData
     if (data) {
-      processIndexData(data, store, storeInitMap)
+      const merge = queryOptions?.index?.merge ?? true
+      processIndexData(data, store, { storeInitMap, merge })
     }
   })
 
@@ -101,23 +88,26 @@ export const storeVueQuery = (
     getKey[1] = id
     getKey[2] = queryParams
     // Reset the data to the cache of vue-query because it could have been changed by another store with relationships
-    const data = <DocWithData | null>getQuery.data.value
+    // Test: Let the user choose if she wants a merge or a replace when executing a query.
+    /*const data = <DocWithData | null>getQuery.data.value
     if (data) {
-      processGetData(data, store, storeInitMap)
-    }
+      processGetData(data, store, { storeInitMap, merge: true })
+    }*/
   }
 
   watch(getQuery.data, (newData: any) => {
     const data = <DocWithData | null>newData
     if (data) {
-      processGetData(data, store, storeInitMap)
+      const merge = queryOptions?.index?.merge ?? true
+      processGetData(data, store, { storeInitMap, merge })
     }
   })
 
   const createQuery = useMutation(
-    (body: any) => createRequest(resourceType, body),
+    (params: { body: any; headers: Headers }) =>
+      createRequest(resourceType, params.body, params.headers),
     {
-      onSuccess: (json: DocWithData | string, body: NewResourceObject) => {
+      onSuccess: (json: DocWithData | string, { body }) => {
         if (typeof json === 'string') {
           store.data[body.id || ''] = body
         } else {
@@ -128,43 +118,43 @@ export const storeVueQuery = (
       ...queryOptions?.create
     }
   )
-  const create = async (body: NewResourceObject) => {
-    createQuery.mutate(body)
+  const create = async (
+    body: NewResourceObject,
+    headers: Headers = new Headers()
+  ) => {
+    createQuery.mutate({ body, headers })
   }
 
   const updateQuery = useMutation(
-    (params: { id: string; body: any }) =>
-      updateRequest(resourceType, params.id, params.body),
+    (params: { id: string; body: any; headers: Headers }) =>
+      updateRequest(resourceType, params.id, params.body, params.headers),
     {
-      onSuccess: (json: DocWithData | string, variables: { id: string }) => {
-        if (typeof json === 'string') {
-          store.get(variables.id)
-        } else {
-          const elementData = json.data as ResourceObject
-          store.data[elementData.id] = jsonApiMerge(
-            store.data[elementData.id],
-            elementData
-          )
-        }
+      onSuccess: (json: DocWithData | string, { id, body }) => {
+        processUpdateData(json, store, { id, body })
       },
       ...queryOptions?.update
     }
   )
-  const update = async (id: string, body: ResourceObject) => {
-    updateQuery.mutate({ id, body })
+  const update = async (
+    id: string,
+    body: ResourceObject,
+    headers: Headers = new Headers()
+  ) => {
+    updateQuery.mutate({ id, body, headers })
   }
 
   const deleteQuery = useMutation(
-    (id: string) => deleteRequest(resourceType, id),
+    (params: { id: string; headers: Headers }) =>
+      deleteRequest(resourceType, params.id, params.headers),
     {
-      onSuccess: (_: any, id: string) => {
+      onSuccess: (_: any, { id }) => {
         delete store.data[id]
       },
       ...queryOptions?.delete
     }
   )
-  const vDelete = async (id: string) => {
-    deleteQuery.mutate(id)
+  const vDelete = async (id: string, headers: Headers = new Headers()) => {
+    deleteQuery.mutate({ id, headers })
   }
 
   return {

@@ -3,7 +3,7 @@ import { storeVueQuery } from 'jsonapi-pinia'
 import { usePostsStore } from '../store/posts'
 import { toRaw } from 'vue'
 
-const postsStore = usePostsStore() 
+const postsStore = usePostsStore()
 const posts = storeVueQuery(postsStore)
 
 const getPosts = () => {
@@ -12,20 +12,21 @@ const getPosts = () => {
 
 const createPosts = () => {
   const payload = {
-    "data": {
-      "type": "posts",
-      "attributes": {
-        "content": "In our second blog post, you will learn how to create resources using the JSON:API specification.",
-        "publishedAt": null,
-        "slug": "creating-jsonapi-resources",
-        "title": "How to Create JSON:API Resources"
+    data: {
+      type: 'posts',
+      attributes: {
+        content:
+          'In our second blog post, you will learn how to create resources using the JSON:API specification.',
+        publishedAt: null,
+        slug: 'creating-jsonapi-resources',
+        title: 'How to Create JSON:API Resources'
       },
-      "relationships": {
-        "tags": {
-          "data": [
+      relationships: {
+        tags: {
+          data: [
             {
-              "type": "tags",
-              "id": "2"
+              type: 'tags',
+              id: '2'
             }
           ]
         }
@@ -47,5 +48,4 @@ console.log(posts)
   </p>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

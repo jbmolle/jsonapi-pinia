@@ -11,10 +11,10 @@ export const setApiConf = (conf: ApiConf) => {
 
 export const indexRequest = async (
   resourceType: string,
-  queryParams: { [key: string]: any } = {}
+  queryParams: { [key: string]: any } = {},
+  headers: Headers = new Headers()
 ) => {
   const url = getUrl(apiConf.baseUrl || '', `/${resourceType}`)
-  const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'GET', headers }
   Object.keys(queryParams).forEach((key) =>
@@ -32,10 +32,10 @@ export const indexRequest = async (
 export const getRequest = async (
   resourceType: string,
   id: string,
-  queryParams: { [key: string]: any } = {}
+  queryParams: { [key: string]: any } = {},
+  headers: Headers = new Headers()
 ) => {
   const url = getUrl(apiConf.baseUrl || '', `/${resourceType}/${id}`)
-  const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'GET', headers }
   Object.keys(queryParams).forEach((key) =>
@@ -52,10 +52,10 @@ export const getRequest = async (
 
 export const createRequest = async (
   resourceType: string,
-  body: NewResourceObject
+  body: NewResourceObject,
+  headers: Headers = new Headers()
 ) => {
   const url = getUrl(apiConf.baseUrl || '', `/${resourceType}`)
-  const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'POST', headers, body: JSON.stringify(body) }
   const response = await fetch(url.href, conf)
@@ -72,10 +72,10 @@ export const createRequest = async (
 export const updateRequest = async (
   resourceType: string,
   id: string,
-  body: ResourceObject
+  body: ResourceObject,
+  headers: Headers = new Headers()
 ) => {
   const url = getUrl(apiConf.baseUrl || '', `/${resourceType}/${id}`)
-  const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'PATCH', headers, body: JSON.stringify(body) }
   const response = await fetch(url.href, conf)
@@ -89,9 +89,12 @@ export const updateRequest = async (
   return response.json()
 }
 
-export const deleteRequest = async (resourceType: string, id: string) => {
+export const deleteRequest = async (
+  resourceType: string,
+  id: string,
+  headers: Headers = new Headers()
+) => {
   const url = getUrl(apiConf.baseUrl || '', `/${resourceType}/${id}`)
-  const headers = new Headers()
   headers.append('Content-Type', 'application/vnd.api+json')
   const conf = { method: 'DELETE', headers }
   const response = await fetch(url.href, conf)
