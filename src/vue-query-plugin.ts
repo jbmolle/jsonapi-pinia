@@ -118,11 +118,11 @@ export const storeVueQuery = (
       ...queryOptions?.create
     }
   )
-  const create = async (
+  const create = (
     body: NewResourceObject,
     headers: Headers = new Headers()
   ) => {
-    createQuery.mutate({ body, headers })
+    return createQuery.mutate({ body, headers })
   }
 
   const updateQuery = useMutation(
@@ -135,12 +135,12 @@ export const storeVueQuery = (
       ...queryOptions?.update
     }
   )
-  const update = async (
+  const update = (
     id: string,
     body: ResourceObject,
     headers: Headers = new Headers()
   ) => {
-    updateQuery.mutate({ id, body, headers })
+    return updateQuery.mutate({ id, body, headers })
   }
 
   const deleteQuery = useMutation(
