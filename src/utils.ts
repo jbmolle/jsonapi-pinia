@@ -10,9 +10,9 @@ interface Options {
   merge: boolean
 }
 
-const customizer = (objValue: any) => {
-  if (isArray(objValue)) {
-    return objValue
+const customizer = (objValue: any, srcValue: any) => {
+  if ((!objValue || isArray(objValue)) && isArray(srcValue)) {
+    return srcValue
   }
 }
 

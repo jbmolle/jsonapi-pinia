@@ -6,7 +6,7 @@ import {
 import { jsonArticle } from './data/articles'
 import { jsonPeople } from './data/people'
 
-describe('processIndexData', function () {
+describe('processIndexData', function() {
   it('should insert data', async () => {
     const store = {
       data: {}
@@ -41,7 +41,7 @@ describe('processIndexData', function () {
     expect(store.data).toEqual(expectedData)
   })
 
-  it('should merge data', async function () {
+  it('should merge data', async function() {
     const store = {
       data: {}
     }
@@ -70,7 +70,7 @@ describe('processIndexData', function () {
     expect(store.data).toEqual(expectedData)
   })
 
-  it('should replace data', async function () {
+  it('should replace data', async function() {
     const store = {
       data: {}
     }
@@ -92,9 +92,42 @@ describe('processIndexData', function () {
     })
     expect(store.data).toEqual(expectedData)
   })
+
+  it('should merge relationships arrays', async function() {
+    const store = {
+      data: {
+        "5b4eedbd4c73c613946cce27": {
+          id: "5b4eedbd4c73c613946cce27",
+          type: "articles",
+          relationships: {
+            authors: {
+              data: []
+            }
+          }
+        }
+      }
+    }
+    const jsonData = [
+      {
+        id: "5b4eedbd4c73c613946cce27",
+        type: "articles",
+        relationships: {
+          authors: {
+            data: [{ id: '1', type: 'authors' }]
+          }
+        }
+      }
+    ]
+    const insertData = {
+      "5b4eedbd4c73c613946cce27": jsonData[0]
+    }
+    const options = { storeInitMap: {}, merge: true }
+    processIndexData({ data: jsonData }, store, options)
+    expect(store.data).toEqual(insertData)
+  })
 })
 
-describe('processGetData', function () {
+describe('processGetData', function() {
   it('should insert data', async () => {
     const store = {
       data: {}
@@ -122,7 +155,7 @@ describe('processGetData', function () {
     expect(store.data).toEqual(expectedData)
   })
 
-  it('should merge data', async function () {
+  it('should merge data', async function() {
     const store = {
       data: {}
     }
@@ -148,7 +181,7 @@ describe('processGetData', function () {
     expect(store.data).toEqual(expectedData)
   })
 
-  it('should replace data', async function () {
+  it('should replace data', async function() {
     const store = {
       data: {}
     }
@@ -173,8 +206,8 @@ describe('processGetData', function () {
   })
 })
 
-describe('processUpdateData', function () {
-  it('should merge data', async function () {
+describe('processUpdateData', function() {
+  it('should merge data', async function() {
     const store = {
       data: {
         '1': jsonArticle('1', '1')
@@ -193,7 +226,7 @@ describe('processUpdateData', function () {
     expect(store.data).toEqual(expectedData)
   })
 
-  it('should replace data', async function () {
+  it('should replace data', async function() {
     const store = {
       data: {
         '1': jsonArticle('1', '1')
