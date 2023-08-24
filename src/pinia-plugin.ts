@@ -27,14 +27,14 @@ export function JsonApiPiniaPlugin(context: PiniaPluginContext) {
             const storeInit = storeInitMap[data2.type] || {}
             const useRelStore = defineStore(data2.type, storeInit)
             const relStore = useRelStore() as Store
-            return relStore.normalizedData[data2.id]
+            return relStore.normalizedData[data2.id] || { id: data2.id, type: data2.type }
           })
         }
         // Not array
         const storeInit = storeInitMap[relData.type] || {}
         const useRelStore = defineStore(relData.type, storeInit)
         const relStore = useRelStore() as Store
-        return relStore.normalizedData[relData.id]
+        return relStore.normalizedData[relData.id] || { id: relData.id, type: relData.type }
       }
       return undefined
     },
